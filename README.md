@@ -1,0 +1,2 @@
+# Islamify
+An Islamic app
