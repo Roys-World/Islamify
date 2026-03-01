@@ -60,6 +60,7 @@ class _MainScreenState extends State<MainScreen> {
     ];
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: screens[_selectedIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
