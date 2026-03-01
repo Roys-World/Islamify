@@ -72,8 +72,13 @@ class PrayerProvider extends ChangeNotifier {
       await NotificationService().cancelPrayerNotifications();
 
       // Schedule notifications for today's prayers
-      for (final prayer in _prayerTimes) {
+      for (int i = 0; i < _prayerTimes.length; i++) {
+        final prayer = _prayerTimes[i];
         if (prayer.name == 'None') continue;
+
+        final currentPrayerName = i == 0
+            ? _prayerTimes.last.name
+            : _prayerTimes[i - 1].name;
 
         // Parse prayer time (HH:mm format)
         final timeParts = prayer.displayTime.split(':');
@@ -95,15 +100,18 @@ class PrayerProvider extends ChangeNotifier {
           continue;
         }
 
-        // Schedule notification 5 minutes before prayer time
+        // Schedule notifications (30 min before + at prayer time)
         await NotificationService().schedulePrayerNotification(
           prayerName: prayer.name,
+          currentPrayerName: currentPrayerName,
           prayerDateTime: prayerDateTime,
           prayerTime: prayer.displayTime,
         );
       }
 
-      print('✓ All prayer notifications scheduled for today');
+      print(
+        '✓ All prayer notifications scheduled (30-min reminders + prayer times)',
+      );
     } catch (e) {
       print('✗ Error scheduling notifications: $e');
     }

@@ -212,7 +212,7 @@ class _AzkaarScreenState extends State<AzkaarScreen>
             fontWeight: FontWeight.bold,
           ),
         ),
-        centerTitle: false,
+        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -221,21 +221,28 @@ class _AzkaarScreenState extends State<AzkaarScreen>
           preferredSize: Size.fromHeight(
             Responsive.isMobile(context) ? 48 : 56,
           ),
-          child: TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            indicatorWeight: 3,
-            labelStyle: TextStyle(
-              fontSize: Responsive.getFontSize(context, 12, 13, 14),
-              fontWeight: FontWeight.w600,
-            ),
-            tabs: const [
-              Tab(text: 'Morning'),
-              Tab(text: 'Evening'),
-              Tab(text: 'General'),
-              Tab(text: 'Istighfar'),
-              Tab(text: 'Family'),
-            ],
+          child: Consumer<SettingsProvider>(
+            builder: (context, settings, _) {
+              return TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                indicatorWeight: 3,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white70,
+                indicatorColor: Colors.white,
+                labelStyle: TextStyle(
+                  fontSize: Responsive.getFontSize(context, 12, 13, 14),
+                  fontWeight: FontWeight.w600,
+                ),
+                tabs: const [
+                  Tab(text: 'Morning'),
+                  Tab(text: 'Evening'),
+                  Tab(text: 'General'),
+                  Tab(text: 'Istighfar'),
+                  Tab(text: 'Family'),
+                ],
+              );
+            },
           ),
         ),
       ),

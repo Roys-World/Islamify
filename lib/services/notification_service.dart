@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  bool _initialized = false;
+  Future<void>? _initializeFuture;
 
   factory NotificationService() {
     return _instance;
@@ -15,7 +17,13 @@ class NotificationService {
     flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   }
 
-  Future<void> initialize() async {
+  Future<void> initialize() {
+    if (_initialized) return Future.value();
+    _initializeFuture ??= _initializeInternal();
+    return _initializeFuture!;
+  }
+
+  Future<void> _initializeInternal() async {
     // Initialize timezone
     tz_data.initializeTimeZones();
 
@@ -50,6 +58,12 @@ class NotificationService {
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.requestNotificationsPermission();
+
+    _initialized = true;
+  }
+
+  Future<void> _ensureInitialized() async {
+    await initialize();
   }
 
   Future<bool> _areNotificationsEnabled() async {
@@ -63,6 +77,7 @@ class NotificationService {
     required String prayerName,
     required String prayerTime,
   }) async {
+    await _ensureInitialized();
     // Check if notifications are enabled
     if (!await _areNotificationsEnabled()) {
       print('⚠ Notifications disabled - skipping notification for $prayerName');
@@ -106,25 +121,17 @@ class NotificationService {
 
   Future<void> schedulePrayerNotification({
     required String prayerName,
+    required String currentPrayerName,
     required DateTime prayerDateTime,
     required String prayerTime,
   }) async {
+    await _ensureInitialized();
     // Check if notifications are enabled
     if (!await _areNotificationsEnabled()) {
       print('⚠ Notifications disabled - skipping scheduling for $prayerName');
       return;
     }
-
     try {
-      // Schedule for 5 minutes before prayer time
-      final scheduledTime = prayerDateTime.subtract(const Duration(minutes: 5));
-
-      // Don't schedule if time has already passed
-      if (scheduledTime.isBefore(DateTime.now())) {
-        print('⚠ Skipped scheduling for $prayerName - time has already passed');
-        return;
-      }
-
       const AndroidNotificationDetails androidNotificationDetails =
           AndroidNotificationDetails(
             'prayer_channel',
@@ -148,21 +155,42 @@ class NotificationService {
         iOS: iosNotificationDetails,
       );
 
-      await flutterLocalNotificationsPlugin.zonedSchedule(
-        prayerName.hashCode,
-        'Prayer Time: $prayerName',
-        'Upcoming prayer at $prayerTime',
-        tz.TZDateTime.from(scheduledTime, tz.local),
-        notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.exact,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        payload: prayerName,
-      );
+      // Schedule notification 30 minutes before prayer time
+      final reminderTime = prayerDateTime.subtract(const Duration(minutes: 30));
+      if (reminderTime.isAfter(DateTime.now())) {
+        await flutterLocalNotificationsPlugin.zonedSchedule(
+          '${prayerName}_reminder'.hashCode,
+          'Prayer Ending Soon',
+          '30 minutes remaining to end $currentPrayerName prayer. Hurry up and pray.',
+          tz.TZDateTime.from(reminderTime, tz.local),
+          notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.exact,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          payload: '${prayerName}_reminder',
+        );
+        print(
+          '✓ Scheduled 30-min reminder for $prayerName at ${reminderTime.toString()}',
+        );
+      }
 
-      print(
-        '✓ Scheduled notification for $prayerName at ${scheduledTime.toString()}',
-      );
+      // Schedule notification at prayer time
+      if (prayerDateTime.isAfter(DateTime.now())) {
+        await flutterLocalNotificationsPlugin.zonedSchedule(
+          prayerName.hashCode,
+          'Prayer Time: $prayerName',
+          'It\'s time for $prayerName prayer now!',
+          tz.TZDateTime.from(prayerDateTime, tz.local),
+          notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.exact,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          payload: prayerName,
+        );
+        print(
+          '✓ Scheduled prayer time notification for $prayerName at ${prayerDateTime.toString()}',
+        );
+      }
     } catch (e) {
       print('✗ Error scheduling notification: $e');
     }
@@ -170,6 +198,7 @@ class NotificationService {
 
   Future<void> cancelPrayerNotifications() async {
     try {
+      await _ensureInitialized();
       await flutterLocalNotificationsPlugin.cancelAll();
       print('✓ All prayer notifications cancelled');
     } catch (e) {
@@ -179,6 +208,7 @@ class NotificationService {
 
   Future<void> cancelNotification(String prayerName) async {
     try {
+      await _ensureInitialized();
       await flutterLocalNotificationsPlugin.cancel(prayerName.hashCode);
       print('✓ Notification cancelled for $prayerName');
     } catch (e) {

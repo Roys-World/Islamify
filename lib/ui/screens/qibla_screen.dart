@@ -118,7 +118,6 @@ class _QiblaScreenState extends State<QiblaScreen> {
         final backgroundColor = AppColors.getBackgroundColor(isDarkMode);
         final cardColor = AppColors.getCardColor(isDarkMode);
         final borderColor = AppColors.getBorderColor(isDarkMode);
-        final textPrimary = AppColors.getTextPrimaryColor(isDarkMode);
         final textSecondary = AppColors.getTextSecondaryColor(isDarkMode);
         final primaryColor = AppColors.getPrimaryColor(isDarkMode);
 
@@ -131,6 +130,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
             title: const Text('Qibla Direction'),
             backgroundColor: primaryColor,
             elevation: 0,
+            centerTitle: true,
           ),
           body: !_compassAvailable
               ? Center(

@@ -7,10 +7,10 @@ import '../../core/constants/app_colors.dart';
 import '../../core/utils/responsive.dart';
 import '../../location_service.dart';
 import '../../providers/prayer_provider.dart';
-import '../../providers/quran_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../services/islamic_date_service.dart';
 import '../../providers/daily_tasks_provider.dart';
+import '../../providers/tasbeeh_provider.dart';
 import 'supplication_screen.dart';
 import 'azkaar_screen.dart';
 import 'daily_tasks_screen.dart';
@@ -41,15 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _updateDateTime();
     _startTimer();
-
-    // init Quran only
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      try {
-        context.read<QuranProvider>().initialize();
-      } catch (e) {
-        print('Error initializing Quran: $e');
-      }
-    });
 
     // load location immediately
     _loadLocationInBackground();
@@ -112,16 +103,17 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // schedule check at Maghrib to fetch tomorrow's date
+  // schedule check at Maghrib to fetch tomorrow's date and reset tasbeeh
   void _startMaghribCheckTimer() {
     _maghribCheckTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       try {
         if (!mounted) return;
 
         final prayerProvider = context.read<PrayerProvider>();
+        final tasbeehProvider = context.read<TasbeehProvider>();
         final currentPrayer = prayerProvider.currentPrayer;
 
-        // when Maghrib is current prayer, fetch tomorrow's Islamic date
+        // when Maghrib is current prayer, fetch tomorrow's Islamic date and reset tasbeeh
         if (currentPrayer != null &&
             currentPrayer.name.toLowerCase() == 'maghrib') {
           final tomorrow = DateTime.now().add(const Duration(days: 1));
@@ -130,6 +122,9 @@ class _HomeScreenState extends State<HomeScreen> {
           if (_cachedIslamicDateDay?.day != tomorrow.day) {
             _fetchAndCacheIslamicDate(forDate: tomorrow);
           }
+
+          // Reset tasbeeh counters at Maghrib
+          tasbeehProvider.checkAndResetAtMaghrib('Maghrib');
         }
 
         // also check if we crossed midnight (new day)

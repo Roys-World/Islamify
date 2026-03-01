@@ -162,8 +162,29 @@ class _PrayersScreenState extends State<PrayersScreen> {
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: AppBar(
-            title: const Text('Prayers'),
+            elevation: 0,
             backgroundColor: Theme.of(context).primaryColor,
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).primaryColor,
+                    Theme.of(context).primaryColor.withOpacity(0.8),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+            title: Text(
+              'Prayers',
+              style: TextStyle(
+                fontSize: Responsive.getFontSize(context, 20, 22, 24),
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
+            centerTitle: true,
           ),
           body: FutureBuilder(
             future: _locationFuture,

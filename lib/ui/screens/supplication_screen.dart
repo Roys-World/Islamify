@@ -109,17 +109,27 @@ class _SupplicationScreenState extends State<SupplicationScreen>
             fontWeight: FontWeight.bold,
           ),
         ),
-        centerTitle: false,
+        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Quranic'),
-            Tab(text: 'Sunnah'),
-          ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Consumer<SettingsProvider>(
+            builder: (context, settings, _) {
+              return TabBar(
+                controller: _tabController,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white70,
+                indicatorColor: Colors.white,
+                tabs: const [
+                  Tab(text: 'Quranic'),
+                  Tab(text: 'Sunnah'),
+                ],
+              );
+            },
+          ),
         ),
       ),
       body: TabBarView(
@@ -530,6 +540,16 @@ class _SupplicationScreenState extends State<SupplicationScreen>
           minChildSize: 0.5,
           maxChildSize: 0.95,
           builder: (context, scrollController) {
+            // Get dark mode setting and define all colors at the start
+            final isDarkMode = context.read<SettingsProvider>().darkMode;
+            final primaryColor = AppColors.primary;
+            final textColorPrimary = isDarkMode
+                ? const Color(0xFFE0E0E0)
+                : const Color(0xFF333333);
+            final borderColor = isDarkMode
+                ? primaryColor.withOpacity(0.4)
+                : primaryColor.withOpacity(0.3);
+
             return Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).scaffoldBackgroundColor,
@@ -558,7 +578,7 @@ class _SupplicationScreenState extends State<SupplicationScreen>
                                 20,
                               ),
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
+                              color: textColorPrimary,
                             ),
                           ),
                         ),
@@ -590,10 +610,12 @@ class _SupplicationScreenState extends State<SupplicationScreen>
                                 Responsive.getPadding(context, 14, 16, 18),
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.08),
+                                color: primaryColor.withOpacity(
+                                  isDarkMode ? 0.12 : 0.08,
+                                ),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: AppColors.primary.withOpacity(0.3),
+                                  color: borderColor,
                                 ),
                               ),
                               child: Text(
@@ -609,7 +631,7 @@ class _SupplicationScreenState extends State<SupplicationScreen>
                                     24,
                                   ),
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
+                                  color: textColorPrimary,
                                   height: 2.2,
                                 ),
                               ),

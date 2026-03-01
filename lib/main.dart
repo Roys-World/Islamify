@@ -6,29 +6,11 @@ import 'providers/prayer_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/quran_provider.dart';
 import 'providers/daily_tasks_provider.dart';
+import 'providers/tasbeeh_provider.dart';
 import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize notification service with error handling
-  try {
-    await NotificationService().initialize();
-    print('✓ Notification service initialized');
-  } catch (e) {
-    print('✗ Error initializing notifications: $e');
-  }
-
-  // Set preferred orientations
-  try {
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-    print('✓ Screen orientation set');
-  } catch (e) {
-    print('✗ Error setting orientation: $e');
-  }
 
   runApp(
     MultiProvider(
@@ -37,8 +19,29 @@ void main() async {
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => QuranProvider()),
         ChangeNotifierProvider(create: (_) => DailyTasksProvider()),
+        ChangeNotifierProvider(create: (_) => TasbeehProvider()),
       ],
       child: const MyApp(),
     ),
   );
+
+  // Defer non-UI blocking initialization to avoid ANR on startup.
+  Future.microtask(() async {
+    try {
+      await NotificationService().initialize();
+      print('✓ Notification service initialized');
+    } catch (e) {
+      print('✗ Error initializing notifications: $e');
+    }
+
+    try {
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+      print('✓ Screen orientation set');
+    } catch (e) {
+      print('✗ Error setting orientation: $e');
+    }
+  });
 }
