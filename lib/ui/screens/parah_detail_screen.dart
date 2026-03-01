@@ -99,95 +99,123 @@ class _ParahDetailScreenState extends State<ParahDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF1B6B45), Color(0xFF2D8A5F)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.parah.name,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            Text(
-              'Surah ${widget.parah.startSurah}:${widget.parah.startVerse} - Surah ${widget.parah.endSurah}:${widget.parah.endVerse}',
-              style: const TextStyle(fontSize: 12, color: Colors.white70),
-            ),
-          ],
-        ),
-      ),
-      body: FutureBuilder<List<Ayah>>(
-        future: _ayahsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading Parah verses...'),
-                ],
-              ),
-            );
-          }
+    return Consumer<SettingsProvider>(
+      builder: (context, settings, _) {
+        final isDarkMode = settings.darkMode;
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 48,
-                    color: AppColors.primary,
+        // Dynamic gradient based on dark mode
+        final List<Color> gradientColors = isDarkMode
+            ? [
+                const Color(0xFF1A5F3A),
+                const Color(0xFF2D8A5F),
+              ] // Darker green for dark mode
+            : [
+                const Color(0xFF1B6B45),
+                const Color(0xFF2D8A5F),
+              ]; // Original green for light mode
+        
+        return Scaffold(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          appBar: AppBar(
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: gradientColors,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  widget.parah.name,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                  const SizedBox(height: 16),
-                  Text('Error: ${snapshot.error}'),
-                ],
-              ),
-            );
-          }
+                ),
+                Text(
+                  'Surah ${widget.parah.startSurah}:${widget.parah.startVerse} - Surah ${widget.parah.endSurah}:${widget.parah.endVerse}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            centerTitle: true,
+          ),
+          body: FutureBuilder<List<Ayah>>(
+            future: _ayahsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text('Loading Parah verses...'),
+                    ],
+                  ),
+                );
+              }
 
-          final ayahs = snapshot.data ?? [];
+              if (snapshot.hasError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(height: 16),
+                      Text('Error: ${snapshot.error}'),
+                    ],
+                  ),
+                );
+              }
 
-          if (ayahs.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.inbox, size: 48, color: AppColors.textSecondary),
-                  SizedBox(height: 16),
-                  Text('No Verses found in this Parah'),
-                ],
-              ),
-            );
-          }
+              final ayahs = snapshot.data ?? [];
 
-          return ListView.builder(
-            padding: EdgeInsets.all(Responsive.getPadding(context, 12, 14, 16)),
-            itemCount: ayahs.length,
-            itemBuilder: (context, index) {
-              return _buildAyahCard(context, ayahs[index]);
+              if (ayahs.isEmpty) {
+                return const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.inbox,
+                        size: 48,
+                        color: AppColors.textSecondary,
+                      ),
+                      SizedBox(height: 16),
+                      Text('No Verses found in this Parah'),
+                    ],
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                padding: EdgeInsets.all(
+                  Responsive.getPadding(context, 12, 14, 16),
+                ),
+                itemCount: ayahs.length,
+                itemBuilder: (context, index) {
+                  return _buildAyahCard(context, ayahs[index]);
+                },
+              );
             },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 

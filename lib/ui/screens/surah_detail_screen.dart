@@ -36,7 +36,7 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
           ),
         ),
         title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
               widget.surah.englishName,
@@ -52,6 +52,7 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
             ),
           ],
         ),
+        centerTitle: true,
       ),
       body: ListView(
         padding: EdgeInsets.all(Responsive.getPadding(context, 12, 16, 20)),
@@ -85,22 +86,26 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
       builder: (context, settings, _) {
         final isDarkMode = settings.darkMode;
         final cardBackgroundColor = AppColors.getCardColor(isDarkMode);
+        final primaryColor = AppColors.getPrimaryColor(isDarkMode);
+        final textPrimaryColor = AppColors.getTextPrimaryColor(isDarkMode);
+        final textSecondaryColor = AppColors.getTextSecondaryColor(isDarkMode);
+        
         return Container(
           padding: EdgeInsets.all(Responsive.getPadding(context, 16, 18, 22)),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
                 cardBackgroundColor,
-                AppColors.primary.withOpacity(0.05),
+                primaryColor.withOpacity(0.05),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+            border: Border.all(color: primaryColor.withOpacity(0.2)),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.08),
+                color: primaryColor.withOpacity(0.08),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -114,34 +119,54 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildNameSection(),
+                        _buildNameSection(
+                          primaryColor,
+                          textPrimaryColor,
+                          textSecondaryColor,
+                        ),
                         SizedBox(
                           height: Responsive.getPadding(context, 12, 14, 16),
                         ),
-                        _buildArabicName(),
+                        _buildArabicName(primaryColor),
                       ],
                     )
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(child: _buildNameSection()),
+                        Expanded(
+                          child: _buildNameSection(
+                            primaryColor,
+                            textPrimaryColor,
+                            textSecondaryColor,
+                          ),
+                        ),
                         SizedBox(
                           width: Responsive.getPadding(context, 16, 20, 24),
                         ),
-                        _buildArabicName(),
+                        _buildArabicName(primaryColor),
                       ],
                     ),
               SizedBox(height: Responsive.getPadding(context, 12, 14, 16)),
-              Divider(color: AppColors.primary.withOpacity(0.2)),
+              Divider(color: primaryColor.withOpacity(0.2)),
               SizedBox(height: Responsive.getPadding(context, 12, 14, 16)),
               // verses + revelation
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildInfoColumn('Verses', '${widget.surah.verses}'),
+                  _buildInfoColumn(
+                    'Verses',
+                    '${widget.surah.verses}',
+                    textPrimaryColor,
+                    textSecondaryColor,
+                  ),
                   SizedBox(width: Responsive.getPadding(context, 8, 12, 16)),
-                  _buildInfoColumn('Revelation', widget.surah.revelationType),
+                  _buildInfoColumn(
+                    'Revelation',
+                    widget.surah.revelationType,
+                    textPrimaryColor,
+                    textSecondaryColor,
+                  ),
                 ],
               ),
             ],
@@ -151,7 +176,11 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
     );
   }
 
-  Widget _buildNameSection() {
+  Widget _buildNameSection(
+    Color primaryColor,
+    Color textPrimaryColor,
+    Color textSecondaryColor,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -159,7 +188,7 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
           'Surah ${widget.surah.number}',
           style: TextStyle(
             fontSize: Responsive.getFontSize(context, 11, 12, 13),
-            color: AppColors.textSecondary,
+            color: textSecondaryColor,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -169,7 +198,7 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
           style: TextStyle(
             fontSize: Responsive.getFontSize(context, 18, 20, 24),
             fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+            color: textPrimaryColor,
           ),
         ),
         SizedBox(height: Responsive.getPadding(context, 4, 6, 8)),
@@ -177,7 +206,7 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
           widget.surah.englishNameTranslation,
           style: TextStyle(
             fontSize: Responsive.getFontSize(context, 12, 13, 14),
-            color: AppColors.textSecondary,
+            color: textSecondaryColor,
             fontStyle: FontStyle.italic,
           ),
         ),
@@ -185,13 +214,13 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
     );
   }
 
-  Widget _buildArabicName() {
+  Widget _buildArabicName(Color primaryColor) {
     return Text(
       widget.surah.name,
       style: TextStyle(
         fontSize: Responsive.getFontSize(context, 22, 26, 32),
         fontWeight: FontWeight.bold,
-        color: AppColors.primary,
+        color: primaryColor,
         height: 1.2,
       ),
       textAlign: TextAlign.right,
@@ -199,7 +228,12 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
     );
   }
 
-  Widget _buildInfoColumn(String label, String value) {
+  Widget _buildInfoColumn(
+    String label,
+    String value,
+    Color textPrimaryColor,
+    Color textSecondaryColor,
+  ) {
     return Expanded(
       child: Column(
         children: [
@@ -207,7 +241,7 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
             label,
             style: TextStyle(
               fontSize: Responsive.getFontSize(context, 11, 12, 13),
-              color: AppColors.textSecondary,
+              color: textSecondaryColor,
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
@@ -218,7 +252,7 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
             style: TextStyle(
               fontSize: Responsive.getFontSize(context, 13, 14, 16),
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: textPrimaryColor,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,

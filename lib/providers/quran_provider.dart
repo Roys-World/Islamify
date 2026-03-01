@@ -38,7 +38,7 @@ class QuranProvider extends ChangeNotifier {
   QuranProvider();
 
   // init quran data
-  Future<void> initialize() async {
+  Future<void> initialize({bool forceRefreshParahs = false}) async {
     if (_isInitialized) return;
 
     try {
@@ -50,7 +50,7 @@ class QuranProvider extends ChangeNotifier {
       _filteredSurahs = _surahs;
 
       // Load Parahs on startup
-      _parahs = await _repository.getParahs(forceRefresh: true);
+      _parahs = await _repository.getParahs(forceRefresh: forceRefreshParahs);
       _filteredParahs = _parahs;
 
       print(

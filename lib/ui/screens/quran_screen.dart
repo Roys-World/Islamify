@@ -24,6 +24,19 @@ class _QuranScreenState extends State<QuranScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    
+    // Dismiss keyboard when tab changes
+    _tabController.addListener(() {
+      FocusScope.of(context).unfocus();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        context.read<QuranProvider>().initialize();
+      } catch (e) {
+        print('Error initializing Quran: $e');
+      }
+    });
   }
 
   @override
@@ -60,6 +73,7 @@ class _QuranScreenState extends State<QuranScreen>
             letterSpacing: 0.5,
           ),
         ),
+        centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
@@ -233,6 +247,8 @@ class _QuranScreenState extends State<QuranScreen>
         final primaryColor = AppColors.getPrimaryColor(isDarkMode);
         return GestureDetector(
           onTap: () {
+            // Dismiss keyboard before navigation
+            FocusScope.of(context).unfocus();
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -375,10 +391,18 @@ class _QuranScreenState extends State<QuranScreen>
   }
 
   Widget _buildParahCard(BuildContext context, dynamic parah) {
-    return Consumer<QuranProvider>(
-      builder: (context, provider, child) {
+    return Consumer<SettingsProvider>(
+      builder: (context, settings, child) {
+        final isDarkMode = settings.darkMode;
+        final cardBackgroundColor = AppColors.getCardColor(isDarkMode);
+        final primaryColor = AppColors.getPrimaryColor(isDarkMode);
+        final textPrimaryColor = AppColors.getTextPrimaryColor(isDarkMode);
+        final textSecondaryColor = AppColors.getTextSecondaryColor(isDarkMode);
+        
         return GestureDetector(
           onTap: () {
+            // Dismiss keyboard before navigation
+            FocusScope.of(context).unfocus();
             // Navigate to Parah detail screen showing all Surahs in range
             Navigator.push(
               context,
@@ -394,15 +418,15 @@ class _QuranScreenState extends State<QuranScreen>
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.white, AppColors.secondary.withOpacity(0.04)],
+                colors: [cardBackgroundColor, primaryColor.withOpacity(0.04)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.secondary.withOpacity(0.15)),
+              border: Border.all(color: primaryColor.withOpacity(0.15)),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.secondary.withOpacity(0.08),
+                  color: primaryColor.withOpacity(0.08),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -416,8 +440,8 @@ class _QuranScreenState extends State<QuranScreen>
                   height: 60,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.secondary.withOpacity(0.12),
-                    border: Border.all(color: AppColors.secondary, width: 1.5),
+                    color: primaryColor.withOpacity(0.12),
+                    border: Border.all(color: primaryColor, width: 1.5),
                   ),
                   child: Center(
                     child: Text(
@@ -425,7 +449,7 @@ class _QuranScreenState extends State<QuranScreen>
                       style: TextStyle(
                         fontSize: Responsive.getFontSize(context, 16, 18, 20),
                         fontWeight: FontWeight.bold,
-                        color: AppColors.secondary,
+                        color: primaryColor,
                       ),
                     ),
                   ),
@@ -442,7 +466,7 @@ class _QuranScreenState extends State<QuranScreen>
                         style: TextStyle(
                           fontSize: Responsive.getFontSize(context, 14, 16, 18),
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: textPrimaryColor,
                         ),
                       ),
                       SizedBox(height: Responsive.getPadding(context, 4, 6, 8)),
@@ -450,7 +474,7 @@ class _QuranScreenState extends State<QuranScreen>
                         'Surah ${parah.startSurah}:${parah.startVerse} to ${parah.endSurah}:${parah.endVerse}',
                         style: TextStyle(
                           fontSize: Responsive.getFontSize(context, 12, 13, 14),
-                          color: AppColors.textSecondary,
+                          color: textSecondaryColor,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -458,7 +482,7 @@ class _QuranScreenState extends State<QuranScreen>
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                Icon(Icons.chevron_right, color: textSecondaryColor),
               ],
             ),
           ),
